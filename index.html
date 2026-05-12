@@ -46,7 +46,7 @@
             textarea.style.height = textarea.scrollHeight + 'px';
         }
 
-        // 保存された日記を読み込む
+        // 保存されたエントリーを読み込む
         function loadDiary() {
             const diary = JSON.parse(localStorage.getItem('diary')) || {};
             const diaryDiv = document.getElementById('diary');
