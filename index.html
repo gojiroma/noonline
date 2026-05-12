@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>シンプル日記ツール</title>
+    <style>
+        body {
+            font-family: "Hiragino Mincho ProN", "Yu Mincho", "MS Mincho", serif;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 24px;
+            margin-bottom: 30px;
+            font-size: large;
+            font-family: "Hiragino Mincho ProN", "Yu Mincho", "MS Mincho", serif;
+            border: none;
+            outline: none;
+            resize: none;
+            overflow: hidden;
+            padding: 5px 0;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="diary"></div>
+
+    <script>
+        // textareaの高さを自動調整
+        function adjustTextareaHeight(textarea) {
+            // 一旦高さをリセット
+            textarea.style.height = 'auto';
+            // scrollHeightを取得して高さを設定
+            textarea.style.height = textarea.scrollHeight + 'px';
+        }
+
+        // 保存された日記を読み込む
+        function loadDiary() {
+            const diary = JSON.parse(localStorage.getItem('diary')) || {};
+            const diaryDiv = document.getElementById('diary');
+            diaryDiv.innerHTML = '';
+
+            const today = new Date().toLocaleDateString('ja-JP');
+            const dates = Object.keys(diary).sort();
+
+            let todayEntryAdded = false;
+
+            dates.forEach(date => {
+                const entry = diary[date];
+                const dateHeader = document.createElement('h1');
+                dateHeader.textContent = date;
+
+                // 当日中のエントリーは textarea のまま
+                if (date === today) {
+                    const textarea = document.createElement('textarea');
+                    textarea.id = `entry-${date}`;
+                    textarea.placeholder = 'どんなことが、あったか';
+
+                    // 入力時の高さ調整
+                    textarea.addEventListener('input', () => {
+                        adjustTextareaHeight(textarea);
+                        diary[date] = textarea.value;
+                        localStorage.setItem('diary', JSON.stringify(diary));
+                    });
+
+                    // 値を設定
+                    textarea.value = entry || '';
+
+                    // DOMに追加する前に高さを調整
+                    diaryDiv.appendChild(dateHeader);
+                    diaryDiv.appendChild(textarea);
+
+                    // 高さを調整（DOMに追加された後に実行）
+                    setTimeout(() => {
+                        adjustTextareaHeight(textarea);
+                    }, 0);
+
+                    // textareaにフォーカス
+                    textarea.focus();
+
+                    todayEntryAdded = true;
+                } else {
+                    // 過去のエントリーは p 要素で表示
+                    const entryElement = document.createElement('p');
+                    entryElement.textContent = entry;
+                    entryElement.style.fontSize = 'large';
+                    entryElement.style.fontFamily = '"Hiragino Mincho ProN", "Yu Mincho", "MS Mincho", serif';
+                    entryElement.style.lineHeight = '1.5';
+
+                    diaryDiv.appendChild(dateHeader);
+                    diaryDiv.appendChild(entryElement);
+                }
+            });
+
+            // 今日のエントリーがまだない場合は新規追加
+            if (!todayEntryAdded) {
+                addTodayEntry();
+            }
+        }
+
+        // 今日のエントリーを追加
+        function addTodayEntry() {
+            const today = new Date().toLocaleDateString('ja-JP');
+            const diary = JSON.parse(localStorage.getItem('diary')) || {};
+            const diaryDiv = document.getElementById('diary');
+
+            const dateHeader = document.createElement('h1');
+            dateHeader.textContent = today;
+
+            const textarea = document.createElement('textarea');
+            textarea.id = `entry-${today}`;
+            textarea.placeholder = 'どんなことが、あったか';
+
+            textarea.addEventListener('input', () => {
+                adjustTextareaHeight(textarea);
+                diary[today] = textarea.value;
+                localStorage.setItem('diary', JSON.stringify(diary));
+            });
+
+            // DOMに追加
+            diaryDiv.appendChild(dateHeader);
+            diaryDiv.appendChild(textarea);
+
+            // 高さを調整（DOMに追加された後に実行）
+            setTimeout(() => {
+                adjustTextareaHeight(textarea);
+            }, 0);
+
+            // textareaにフォーカス
+            textarea.focus();
+        }
+
+        // キーボードイベントを監視
+        document.addEventListener('keydown', (e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+                e.preventDefault();
+                downloadDiaryAsText();
+            }
+        });
+
+        // 日記をテキストファイルとしてダウンロード
+        function downloadDiaryAsText() {
+            const diary = JSON.parse(localStorage.getItem('diary')) || {};
+            const dates = Object.keys(diary).sort();
+            let content = '';
+
+            dates.forEach(date => {
+                content += `${date}\n\n${diary[date]}\n\n`;
+            });
+
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'diary.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // 初期読み込み
+        loadDiary();
+    </script>
+</body>
+
+</html>
