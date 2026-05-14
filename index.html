@@ -150,6 +150,12 @@
             }
         });
 
+        // 右クリックイベントを監視
+        document.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            downloadDiaryAsText();
+        });
+
         // 日記をテキストファイルとしてダウンロード
         function downloadDiaryAsText() {
             const diary = JSON.parse(localStorage.getItem('diary')) || {};
@@ -160,11 +166,19 @@
                 content += `${date}\n\n${diary[date]}\n\n`;
             });
 
+            // ファイル名に日付範囲を含める
+            let filename = 'diary.txt';
+            if (dates.length > 0) {
+                const startDate = dates[0].replace(/\//g, '-');
+                const endDate = dates[dates.length - 1].replace(/\//g, '-');
+                filename = `diary_${startDate}_${endDate}.txt`;
+            }
+
             const blob = new Blob([content], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'diary.txt';
+            a.download = filename;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
