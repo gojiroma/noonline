@@ -1,204 +1,108 @@
 <!DOCTYPE html>
-<html lang="ja">
-
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>noonline</title>
+    <title>Smooth Solid Line Draw</title>
     <style>
         body {
-            font-family: "Hiragino Mincho ProN", "Yu Mincho", "MS Mincho", serif;
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        h1 {
-            font-size: 1.5em;
-            margin-bottom: 10px;
-        }
-
-        textarea {
-            width: 100%;
-            min-height: 24px;
-            margin-bottom: 30px;
-            font-size: large;
-            font-family: "Hiragino Mincho ProN", "Yu Mincho", "MS Mincho", serif;
-            border: none;
-            outline: none;
-            resize: none;
+            margin: 0;
+            padding: 0;
             overflow: hidden;
-            padding: 5px 0;
-            line-height: 1.5;
+            background-color: #f0f0f0;
+            touch-action: none;
+        }
+        #drawArea {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            cursor: crosshair;
         }
     </style>
 </head>
-
 <body>
-    <div id="diary"></div>
+    <div id="drawArea"></div>
 
     <script>
-        // textareaの高さを自動調整
-        function adjustTextareaHeight(textarea) {
-            // 一旦高さをリセット
-            textarea.style.height = 'auto';
-            // scrollHeightを取得して高さを設定
-            textarea.style.height = textarea.scrollHeight + 'px';
-        }
+        (function() {
+            var drawArea = document.getElementById('drawArea');
+            var isDrawing = false;
+            var lastX = 0;
+            var lastY = 0;
 
-        // ランダムな3文字を生成
-        function generateRandomSuffix() {
-            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-            let result = '';
-            for (let i = 0; i < 3; i++) {
-                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            // 描画領域のサイズをウィンドウサイズに合わせる
+            function resizeDrawArea() {
+                drawArea.style.width = window.innerWidth + 'px';
+                drawArea.style.height = window.innerHeight + 'px';
             }
-            return result;
-        }
 
-        // 保存されたエントリーを読み込む
-        function loadDiary() {
-            const diary = JSON.parse(localStorage.getItem('diary')) || {};
-            const diaryDiv = document.getElementById('diary');
-            diaryDiv.innerHTML = '';
+            // 初期設定
+            resizeDrawArea();
+            window.addEventListener('resize', resizeDrawArea);
 
-            const today = new Date().toLocaleDateString('ja-JP');
-            const dates = Object.keys(diary).sort();
+            // 線を描画
+            function drawLine(x1, y1, x2, y2) {
+                var length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                var angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
 
-            let todayEntryAdded = false;
-
-            dates.forEach(date => {
-                const entry = diary[date];
-                const dateHeader = document.createElement('h1');
-                dateHeader.textContent = date;
-
-                // 当日中のエントリーは textarea のまま
-                if (date === today) {
-                    const textarea = document.createElement('textarea');
-                    textarea.id = `entry-${date}`;
-                    textarea.placeholder = 'どんなことが、あったか';
-
-                    // 入力時の高さ調整
-                    textarea.addEventListener('input', () => {
-                        adjustTextareaHeight(textarea);
-                        diary[date] = textarea.value;
-                        localStorage.setItem('diary', JSON.stringify(diary));
-                    });
-
-                    // 値を設定
-                    textarea.value = entry || '';
-
-                    // DOMに追加する前に高さを調整
-                    diaryDiv.appendChild(dateHeader);
-                    diaryDiv.appendChild(textarea);
-
-                    // 高さを調整（DOMに追加された後に実行）
-                    setTimeout(() => {
-                        adjustTextareaHeight(textarea);
-                    }, 0);
-
-                    // textareaにフォーカス
-                    textarea.focus();
-
-                    todayEntryAdded = true;
-                } else {
-                    // 過去のエントリーは p 要素で表示
-                    const entryElement = document.createElement('p');
-                    entryElement.textContent = entry;
-                    entryElement.style.fontSize = 'large';
-                    entryElement.style.fontFamily = '"Hiragino Mincho ProN", "Yu Mincho", "MS Mincho", serif';
-                    entryElement.style.lineHeight = '1.5';
-
-                    diaryDiv.appendChild(dateHeader);
-                    diaryDiv.appendChild(entryElement);
-                }
-            });
-
-            // 今日のエントリーがまだない場合は新規追加
-            if (!todayEntryAdded) {
-                addTodayEntry();
+                var line = document.createElement('div');
+                line.style.position = 'absolute';
+                line.style.left = x1 + 'px';
+                line.style.top = y1 + 'px';
+                line.style.width = length + 'px';
+                line.style.height = '3px';
+                line.style.backgroundColor = 'black';
+                line.style.transformOrigin = '0 0';
+                line.style.transform = 'rotate(' + angle + 'deg)';
+                line.style.borderRadius = '1.5px';
+                line.style.pointerEvents = 'none';
+                drawArea.appendChild(line);
             }
-        }
 
-        // 今日のエントリーを追加
-        function addTodayEntry() {
-            const today = new Date().toLocaleDateString('ja-JP');
-            const diary = JSON.parse(localStorage.getItem('diary')) || {};
-            const diaryDiv = document.getElementById('diary');
+            // 描画を開始
+            function startDrawing(e) {
+                isDrawing = true;
+                var x = e.clientX || e.touches[0].clientX;
+                var y = e.clientY || e.touches[0].clientY;
+                lastX = x;
+                lastY = y;
+            }
 
-            const dateHeader = document.createElement('h1');
-            dateHeader.textContent = today;
+            // 描画中
+            function draw(e) {
+                if (!isDrawing) return;
+                var x = e.clientX || e.touches[0].clientX;
+                var y = e.clientY || e.touches[0].clientY;
 
-            const textarea = document.createElement('textarea');
-            textarea.id = `entry-${today}`;
-            textarea.placeholder = 'どんなことが、あったか';
+                // 線を描画
+                drawLine(lastX, lastY, x, y);
+                lastX = x;
+                lastY = y;
+            }
 
-            textarea.addEventListener('input', () => {
-                adjustTextareaHeight(textarea);
-                diary[today] = textarea.value;
-                localStorage.setItem('diary', JSON.stringify(diary));
-            });
+            // 描画を終了
+            function stopDrawing() {
+                isDrawing = false;
+            }
 
-            // DOMに追加
-            diaryDiv.appendChild(dateHeader);
-            diaryDiv.appendChild(textarea);
+            // イベントリスナーを登録
+            drawArea.addEventListener('mousedown', startDrawing);
+            drawArea.addEventListener('mousemove', draw);
+            drawArea.addEventListener('mouseup', stopDrawing);
+            drawArea.addEventListener('mouseout', stopDrawing);
 
-            // 高さを調整（DOMに追加された後に実行）
-            setTimeout(() => {
-                adjustTextareaHeight(textarea);
-            }, 0);
-
-            // textareaにフォーカス
-            textarea.focus();
-        }
-
-        // キーボードイベントを監視
-        document.addEventListener('keydown', (e) => {
-            if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+            drawArea.addEventListener('touchstart', function(e) {
                 e.preventDefault();
-                downloadDiaryAsText();
-            }
-        });
-
-        // 右クリックイベントを監視
-        document.addEventListener('contextmenu', (e) => {
-            e.preventDefault();
-            downloadDiaryAsText();
-        });
-
-        // 日記をテキストファイルとしてダウンロード
-        function downloadDiaryAsText() {
-            const diary = JSON.parse(localStorage.getItem('diary')) || {};
-            const dates = Object.keys(diary).sort();
-            let content = '';
-
-            dates.forEach(date => {
-                content += `${date}\n\n${diary[date]}\n\n`;
+                startDrawing(e);
             });
-
-            // ファイル名に日付範囲とランダムな3文字を含める
-            let filename = 'diary.txt';
-            if (dates.length > 0) {
-                const startDate = dates[0].replace(/\//g, '-');
-                const endDate = dates[dates.length - 1].replace(/\//g, '-');
-                const randomSuffix = generateRandomSuffix();
-                filename = `diary_${startDate}_${endDate}_${randomSuffix}.txt`;
-            }
-
-            const blob = new Blob([content], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-
-        // 初期読み込み
-        loadDiary();
+            drawArea.addEventListener('touchmove', function(e) {
+                e.preventDefault();
+                draw(e);
+            });
+            drawArea.addEventListener('touchend', stopDrawing);
+        })();
     </script>
 </body>
-
 </html>
