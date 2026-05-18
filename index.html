@@ -14,6 +14,7 @@
             align-items: center;
             background-color: #ffffff;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            position: relative;
         }
         textarea {
             width: 80%;
@@ -32,13 +33,25 @@
         textarea::-webkit-resizer {
             display: none;
         }
+        #datetime {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            color: rgba(0, 0, 255, 0.5);
+            font-size: 14px;
+            text-align: right;
+            line-height: 1.4;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
     </style>
 </head>
 <body>
     <textarea id="textContent" autofocus></textarea>
+    <div id="datetime"></div>
 
     <script>
         const textarea = document.getElementById('textContent');
+        const datetimeElement = document.getElementById('datetime');
 
         // ローカルストレージから読み込み
         textarea.value = localStorage.getItem('textContent') || '';
@@ -51,6 +64,19 @@
         });
         textarea.style.height = 'auto';
         textarea.style.height = (textarea.scrollHeight) + 'px';
+
+        // 日付と時刻を更新
+        function updateDatetime() {
+            const now = new Date();
+            const date = now.toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' });
+            const time = now.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+            datetimeElement.innerHTML = `${date}<br>${time}`;
+        }
+
+        // 初回表示
+        updateDatetime();
+        // 1秒ごとに更新
+        setInterval(updateDatetime, 1000);
 
         // Shiftキーを2回押したかを追跡
         let shiftPressCount = 0;
@@ -66,9 +92,15 @@
             if (event.key === 'Escape') {
                 const cursorPosition = textarea.selectionStart;
                 const textBeforeCursor = textarea.value.substring(0, cursorPosition);
-                const lines = textBeforeCursor.split('\n');
-                const currentLineStart = lines.slice(0, -1).join('\n').length;
-                const currentLineEnd = cursorPosition;
+                const textAfterCursor = textarea.value.substring(cursorPosition);
+                const linesBeforeCursor = textBeforeCursor.split('\n');
+                const linesAfterCursor = textAfterCursor.split('\n');
+
+                // カーソルのある行を特定
+                const currentLineStart = linesBeforeCursor.slice(0, -1).join('\n').length;
+                const currentLineEnd = currentLineStart + linesBeforeCursor[linesBeforeCursor.length - 1].length + (linesAfterCursor.length > 0 ? linesAfterCursor[0].length + 1 : 0);
+
+                // 現在行を削除
                 const newText = textarea.value.substring(0, currentLineStart) + textarea.value.substring(currentLineEnd);
 
                 textarea.value = newText;
