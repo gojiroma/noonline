@@ -38,7 +38,7 @@
             bottom: 20px;
             right: 20px;
             color: rgba(0, 0, 255, 0.5);
-            font-size: 14px;
+            font-size: 18px;
             text-align: right;
             line-height: 1.4;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -68,8 +68,10 @@
         // 日付と時刻を更新
         function updateDatetime() {
             const now = new Date();
-            const date = now.toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' });
-            const time = now.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+            const optionsDate = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+            const optionsTime = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+            const date = now.toLocaleDateString('ja-JP', optionsDate);
+            const time = now.toLocaleTimeString('ja-JP', optionsTime);
             datetimeElement.innerHTML = `${date}<br>${time}`;
         }
 
