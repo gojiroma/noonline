@@ -78,15 +78,44 @@
             background-color: rgba(0, 0, 0, 0.05);
         }
 
-        .link-amazon { color: #b87e26; }
-        .link-calendar { color: #9e9142; }
-        .link-mail { color: #0000FF; }
-        .link-inoreader { color: #007b7b; }
-        .link-lechat { color: #FF0000; }
-        .link-maps { color: #008000; }
-        .link-keep { color: #7e8e08; }
-        .link-transit { color: #8B4513; }
-        .link-github { color: #333; }
+        .link-amazon {
+            color: #b87e26;
+        }
+
+        .link-calendar {
+            color: #9e9142;
+        }
+
+        .link-mail {
+            color: #0000FF;
+        }
+
+        .link-inoreader {
+            color: #007b7b;
+        }
+
+        .link-lechat {
+            color: #FF0000;
+        }
+
+        .link-maps {
+            color: #008000;
+        }
+
+        .link-keep {
+            color: #7e8e08;
+        }
+
+        .link-transit {
+            color: #8B4513;
+        }
+
+        .link-github {
+            color: #333;
+        }
+        .link-gemini {
+            color: #4c0a7b;
+        }
     </style>
 </head>
 
@@ -100,6 +129,7 @@
         <a href="https://mail.zoho.jp/zm/#mail/folder/inbox" class="link-mail" target="_blank">Mail</a>
         <a href="https://www.inoreader.com/all_articles" class="link-inoreader" target="_blank">Inoreader</a>
         <a href="https://chat.mistral.ai/chat" class="link-lechat" target="_blank">Le Chat</a>
+        <a href="https://gemini.google.com/" class="link-gemini" target="_blank">Gemini</a>
         <a href="https://www.google.com/maps" class="link-maps" target="_blank">Maps</a>
         <a href="https://keep.google.com/" class="link-keep" target="_blank">Keep</a>
         <a href="https://transit.yahoo.co.jp/" class="link-transit" target="_blank">乗り換え</a>
@@ -257,11 +287,12 @@
         }
 
         document.querySelectorAll('.link-menu a').forEach(link => {
-            link.addEventListener('mouseenter', function(e) {
+            link.addEventListener('mouseenter', function (e) {
                 e.preventDefault();
                 location.href = this.href;
             });
         });
     </script>
 </body>
+
 </html>
