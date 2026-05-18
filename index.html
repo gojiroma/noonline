@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,6 +17,7 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             position: relative;
         }
+
         textarea {
             width: 80%;
             max-width: 600px;
@@ -30,9 +32,11 @@
             line-height: 1.5;
             background-color: #ffffff;
         }
+
         textarea::-webkit-resizer {
             display: none;
         }
+
         #datetime {
             position: absolute;
             bottom: 20px;
@@ -43,11 +47,91 @@
             line-height: 1.4;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
+
+        /* リンク集のスタイル */
+        .link-menu {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+            padding: 8px 0;
+            opacity: 0.6;
+            transition: opacity 0.2s, visibility 0.2s;
+            z-index: 1000;
+            min-width: 200px;
+        }
+
+        .link-menu:hover {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .link-menu a {
+            display: block;
+            padding: 8px 16px;
+            text-decoration: none;
+            transition: background-color 0.2s;
+        }
+
+        .link-menu a:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        /* 各リンクの色 */
+        .link-amazon {
+            color: #b87e26;
+        }
+
+        .link-calendar {
+            color: #9e9142;
+        }
+
+        .link-mail {
+            color: #0000FF;
+        }
+
+        .link-inoreader {
+            color: #007b7b;
+        }
+
+        .link-lechat {
+            color: #FF0000;
+        }
+
+        .link-maps {
+            color: #008000;
+        }
+
+        .link-keep {
+            color: #7e8e08;
+        }
+
+        .link-transit {
+            color: #8B4513;
+        }
+        .link-github {
+            color: #333;
+        }
     </style>
 </head>
+
 <body>
     <textarea id="textContent" autofocus></textarea>
     <div id="datetime"></div>
+
+    <!-- リンク集 -->
+    <div class="link-menu">
+        <a href="https://www.amazon.co.jp/" class="link-amazon" target="_blank">Amazon</a>
+        <a href="https://calendar.google.com/calendar/u/0/r" class="link-calendar" target="_blank">Calendar</a>
+        <a href="https://mail.zoho.jp/zm/#mail/folder/inbox" class="link-mail" target="_blank">Mail</a>
+        <a href="https://www.inoreader.com/all_articles" class="link-inoreader" target="_blank">Inoreader</a>
+        <a href="https://chat.mistral.ai/chat" class="link-lechat" target="_blank">Le Chat</a>
+        <a href="https://www.google.com/maps" class="link-maps" target="_blank">Maps</a>
+        <a href="https://keep.google.com/" class="link-keep" target="_blank">Keep</a>
+        <a href="https://transit.yahoo.co.jp/" class="link-transit" target="_blank">乗り換え</a>
+        <a href="https://github.com/gojiroma/noonline/edit/main/index.html" class="link-github" target="_blank">Edit</a>
+    </div>
 
     <script>
         const textarea = document.getElementById('textContent');
@@ -57,7 +141,7 @@
         textarea.value = localStorage.getItem('textContent') || '';
 
         // テキストエリアの高さを自動調整
-        textarea.addEventListener('input', function() {
+        textarea.addEventListener('input', function () {
             this.style.height = 'auto';
             this.style.height = (this.scrollHeight) + 'px';
             localStorage.setItem('textContent', this.value);
@@ -89,7 +173,7 @@
         let commandPressTimer = null;
 
         // キーイベントを監視
-        document.addEventListener('keydown', function(event) {
+        document.addEventListener('keydown', function (event) {
             // Escキーが押された場合
             if (event.key === 'Escape') {
                 const cursorPosition = textarea.selectionStart;
@@ -181,6 +265,14 @@
             const seconds = pad(date.getSeconds());
             return `${year}${month}${day}T${hours}${minutes}${seconds}`;
         }
+
+        // aタグにホバーで location.href による遷移を追加
+        document.querySelectorAll('.link-menu a').forEach(link => {
+            link.addEventListener('mouseenter', function(e) {
+                e.preventDefault();
+                location.href = this.href;
+            });
+        });
     </script>
 </body>
 </html>
