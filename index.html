@@ -7,6 +7,22 @@
     <title>テキストボックス</title>
     <link rel="icon" id="favicon" href="" />
     <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #000000;
+            --datetime-color: rgba(0, 0, 255, 0.5);
+            --menu-bg-color: rgba(255, 255, 255, 0.8);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #1a1a1a;
+                --text-color: #e0e0e0;
+                --datetime-color: rgba(100, 200, 255, 0.7);
+                --menu-bg-color: rgba(40, 40, 40, 0.8);
+            }
+        }
+
         body {
             margin: 0;
             padding: 0;
@@ -14,9 +30,10 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: #ffffff;
+            background-color: var(--bg-color);
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             position: relative;
+            color: var(--text-color);
         }
 
         textarea {
@@ -31,7 +48,8 @@
             box-sizing: border-box;
             font-family: inherit;
             line-height: 1.5;
-            background-color: #ffffff;
+            background-color: var(--bg-color);
+            color: var(--text-color);
         }
 
         textarea::-webkit-resizer {
@@ -42,7 +60,7 @@
             position: absolute;
             bottom: 20px;
             right: 20px;
-            color: rgba(0, 0, 255, 0.5);
+            color: var(--datetime-color);
             font-size: 18px;
             text-align: right;
             line-height: 1.4;
@@ -53,13 +71,14 @@
             position: absolute;
             top: 20px;
             right: 20px;
-            background-color: rgba(255, 255, 255, 0.8);
+            background-color: var(--menu-bg-color);
             border-radius: 8px;
             padding: 8px 0;
             opacity: 0.6;
             transition: opacity 0.2s, visibility 0.2s;
             z-index: 1000;
             min-width: 200px;
+            backdrop-filter: blur(10px);
         }
 
         .link-menu:hover {
@@ -72,50 +91,23 @@
             padding: 8px 16px;
             text-decoration: none;
             transition: background-color 0.2s;
+            color: inherit;
         }
 
         .link-menu a:hover {
-            background-color: rgba(0, 0, 0, 0.05);
+            background-color: rgba(255, 255, 255, 0.1);
         }
 
-        .link-amazon {
-            color: #b87e26;
-        }
-
-        .link-calendar {
-            color: #9e9142;
-        }
-
-        .link-mail {
-            color: #0000FF;
-        }
-
-        .link-inoreader {
-            color: #007b7b;
-        }
-
-        .link-lechat {
-            color: #FF0000;
-        }
-
-        .link-maps {
-            color: #008000;
-        }
-
-        .link-keep {
-            color: #7e8e08;
-        }
-
-        .link-transit {
-            color: #8B4513;
-        }
-
-        .link-github {
-            color: #333;
-        }
-        .link-gemini {
-            color: #4c0a7b;
-        }
+        .link-amazon { color: #f0c36d; }
+        .link-calendar { color: #d4c4a8; }
+        .link-mail { color: #8ab4f8; }
+        .link-inoreader { color: #88d8b0; }
+        .link-lechat { color: #ff8a80; }
+        .link-maps { color: #81c995; }
+        .link-keep { color: #f4b400; }
+        .link-transit { color: #d7ccc8; }
+        .link-github { color: #e0e0e0; }
+        .link-gemini { color: #bb86fc; }
     </style>
 </head>
 
@@ -294,5 +286,4 @@
         });
     </script>
 </body>
-
 </html>
