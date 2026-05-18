@@ -29,6 +29,9 @@
             line-height: 1.5;
             background-color: #ffffff;
         }
+        textarea::-webkit-resizer {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -59,13 +62,30 @@
 
         // キーイベントを監視
         document.addEventListener('keydown', function(event) {
+            // Escキーが押された場合
+            if (event.key === 'Escape') {
+                const cursorPosition = textarea.selectionStart;
+                const textBeforeCursor = textarea.value.substring(0, cursorPosition);
+                const lines = textBeforeCursor.split('\n');
+                const currentLineStart = lines.slice(0, -1).join('\n').length;
+                const currentLineEnd = cursorPosition;
+                const newText = textarea.value.substring(0, currentLineStart) + textarea.value.substring(currentLineEnd);
+
+                textarea.value = newText;
+                textarea.selectionStart = textarea.selectionEnd = currentLineStart;
+                textarea.style.height = 'auto';
+                textarea.style.height = (textarea.scrollHeight) + 'px';
+                localStorage.setItem('textContent', textarea.value);
+                event.preventDefault();
+            }
+
             // Shiftキーが押された場合
             if (event.key === 'Shift') {
                 shiftPressCount++;
                 clearTimeout(shiftPressTimer);
                 shiftPressTimer = setTimeout(() => {
                     shiftPressCount = 0;
-                }, 500); // 500ms以内に2回押されたか判定
+                }, 500);
 
                 if (shiftPressCount === 2) {
                     addToGoogleCalendar();
@@ -79,7 +99,7 @@
                 clearTimeout(commandPressTimer);
                 commandPressTimer = setTimeout(() => {
                     commandPressCount = 0;
-                }, 500); // 500ms以内に2回押されたか判定
+                }, 500);
 
                 if (commandPressCount === 2) {
                     sendToLeChat();
@@ -98,7 +118,7 @@
 
             const now = new Date();
             const startTime = formatDateForGoogleCalendar(now);
-            const endTime = formatDateForGoogleCalendar(new Date(now.getTime() + 60000)); // 1分後
+            const endTime = formatDateForGoogleCalendar(new Date(now.getTime() + 60000));
 
             const calendarUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(currentLine)}&dates=${startTime}/${endTime}`;
             window.open(calendarUrl, '_blank');
