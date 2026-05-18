@@ -1,108 +1,52 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>Smooth Solid Line Draw</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>テキストボックス</title>
     <style>
         body {
             margin: 0;
             padding: 0;
-            overflow: hidden;
-            background-color: #f0f0f0;
-            touch-action: none;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
-        #drawArea {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: white;
-            cursor: crosshair;
+        textarea {
+            width: 80%;
+            max-width: 600px;
+            min-height: 200px;
+            padding: 12px;
+            font-size: 16pt;
+            border: none;
+            outline: none;
+            resize: none;
+            box-sizing: border-box;
+            font-family: inherit;
+            line-height: 1.5;
+            background-color: #ffffff;
         }
     </style>
 </head>
 <body>
-    <div id="drawArea"></div>
+    <textarea id="textContent" autofocus></textarea>
 
     <script>
-        (function() {
-            var drawArea = document.getElementById('drawArea');
-            var isDrawing = false;
-            var lastX = 0;
-            var lastY = 0;
+        const textarea = document.getElementById('textContent');
 
-            // 描画領域のサイズをウィンドウサイズに合わせる
-            function resizeDrawArea() {
-                drawArea.style.width = window.innerWidth + 'px';
-                drawArea.style.height = window.innerHeight + 'px';
-            }
+        textarea.value = localStorage.getItem('textContent') || '';
 
-            // 初期設定
-            resizeDrawArea();
-            window.addEventListener('resize', resizeDrawArea);
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+            localStorage.setItem('textContent', this.value);
+        });
 
-            // 線を描画
-            function drawLine(x1, y1, x2, y2) {
-                var length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
-                var angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
-
-                var line = document.createElement('div');
-                line.style.position = 'absolute';
-                line.style.left = x1 + 'px';
-                line.style.top = y1 + 'px';
-                line.style.width = length + 'px';
-                line.style.height = '3px';
-                line.style.backgroundColor = 'black';
-                line.style.transformOrigin = '0 0';
-                line.style.transform = 'rotate(' + angle + 'deg)';
-                line.style.borderRadius = '1.5px';
-                line.style.pointerEvents = 'none';
-                drawArea.appendChild(line);
-            }
-
-            // 描画を開始
-            function startDrawing(e) {
-                isDrawing = true;
-                var x = e.clientX || e.touches[0].clientX;
-                var y = e.clientY || e.touches[0].clientY;
-                lastX = x;
-                lastY = y;
-            }
-
-            // 描画中
-            function draw(e) {
-                if (!isDrawing) return;
-                var x = e.clientX || e.touches[0].clientX;
-                var y = e.clientY || e.touches[0].clientY;
-
-                // 線を描画
-                drawLine(lastX, lastY, x, y);
-                lastX = x;
-                lastY = y;
-            }
-
-            // 描画を終了
-            function stopDrawing() {
-                isDrawing = false;
-            }
-
-            // イベントリスナーを登録
-            drawArea.addEventListener('mousedown', startDrawing);
-            drawArea.addEventListener('mousemove', draw);
-            drawArea.addEventListener('mouseup', stopDrawing);
-            drawArea.addEventListener('mouseout', stopDrawing);
-
-            drawArea.addEventListener('touchstart', function(e) {
-                e.preventDefault();
-                startDrawing(e);
-            });
-            drawArea.addEventListener('touchmove', function(e) {
-                e.preventDefault();
-                draw(e);
-            });
-            drawArea.addEventListener('touchend', stopDrawing);
-        })();
+        textarea.style.height = 'auto';
+        textarea.style.height = (textarea.scrollHeight) + 'px';
     </script>
 </body>
 </html>
