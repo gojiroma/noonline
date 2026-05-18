@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>テキストボックス</title>
+    <link rel="icon" id="favicon" href="" />
     <style>
         body {
             margin: 0;
@@ -48,7 +49,6 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
 
-        /* リンク集のスタイル */
         .link-menu {
             position: absolute;
             top: 20px;
@@ -78,41 +78,15 @@
             background-color: rgba(0, 0, 0, 0.05);
         }
 
-        /* 各リンクの色 */
-        .link-amazon {
-            color: #b87e26;
-        }
-
-        .link-calendar {
-            color: #9e9142;
-        }
-
-        .link-mail {
-            color: #0000FF;
-        }
-
-        .link-inoreader {
-            color: #007b7b;
-        }
-
-        .link-lechat {
-            color: #FF0000;
-        }
-
-        .link-maps {
-            color: #008000;
-        }
-
-        .link-keep {
-            color: #7e8e08;
-        }
-
-        .link-transit {
-            color: #8B4513;
-        }
-        .link-github {
-            color: #333;
-        }
+        .link-amazon { color: #b87e26; }
+        .link-calendar { color: #9e9142; }
+        .link-mail { color: #0000FF; }
+        .link-inoreader { color: #007b7b; }
+        .link-lechat { color: #FF0000; }
+        .link-maps { color: #008000; }
+        .link-keep { color: #7e8e08; }
+        .link-transit { color: #8B4513; }
+        .link-github { color: #333; }
     </style>
 </head>
 
@@ -120,7 +94,6 @@
     <textarea id="textContent" autofocus></textarea>
     <div id="datetime"></div>
 
-    <!-- リンク集 -->
     <div class="link-menu">
         <a href="https://www.amazon.co.jp/" class="link-amazon" target="_blank">Amazon</a>
         <a href="https://calendar.google.com/calendar/u/0/r" class="link-calendar" target="_blank">Calendar</a>
@@ -136,6 +109,7 @@
     <script>
         const textarea = document.getElementById('textContent');
         const datetimeElement = document.getElementById('datetime');
+        const faviconLink = document.getElementById('favicon');
 
         // ローカルストレージから読み込み
         textarea.value = localStorage.getItem('textContent') || '';
@@ -149,20 +123,48 @@
         textarea.style.height = 'auto';
         textarea.style.height = (textarea.scrollHeight) + 'px';
 
+        // ランダムな絵文字を選択
+        const emojis = ['🏃', '🎌', '🐱', '📖', '☕', '🌸', '🌙', '🎵', '🚀', '🌈', '🍵', '🎨', '📝', '🌿', '🐢', '🏮', '🎭', '🍡', '🎋', '🏯'];
+        const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+
+        // faviconをランダムな絵文字に設定
+        faviconLink.href = `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">${randomEmoji}</text></svg>`;
+
+        // 1日1回のリダイレクト処理
+        function checkAndRedirect() {
+            const today = new Date().toLocaleDateString('ja-JP');
+            const lastRedirectDate = localStorage.getItem('lastRedirectDate');
+
+            if (lastRedirectDate !== today) {
+                localStorage.setItem('lastRedirectDate', today);
+                window.location.href = 'https://taiso.poet.blue';
+            }
+        }
+
         // 日付と時刻を更新
         function updateDatetime() {
             const now = new Date();
-            const optionsDate = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
             const optionsTime = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
-            const date = now.toLocaleDateString('ja-JP', optionsDate);
             const time = now.toLocaleTimeString('ja-JP', optionsTime);
+
+            const month = now.getMonth() + 1;
+            const day = now.getDate();
+            const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
+            const dayOfWeek = weekdays[now.getDay()];
+
+            document.title = `${time} ${month}/${day} (${dayOfWeek})`;
+
+            const optionsDate = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+            const date = now.toLocaleDateString('ja-JP', optionsDate);
             datetimeElement.innerHTML = `${date}<br>${time}`;
         }
 
         // 初回表示
         updateDatetime();
-        // 1秒ごとに更新
         setInterval(updateDatetime, 1000);
+
+        // リダイレクトチェックを実行
+        checkAndRedirect();
 
         // Shiftキーを2回押したかを追跡
         let shiftPressCount = 0;
@@ -174,7 +176,6 @@
 
         // キーイベントを監視
         document.addEventListener('keydown', function (event) {
-            // Escキーが押された場合
             if (event.key === 'Escape') {
                 const cursorPosition = textarea.selectionStart;
                 const textBeforeCursor = textarea.value.substring(0, cursorPosition);
@@ -182,13 +183,10 @@
                 const linesBeforeCursor = textBeforeCursor.split('\n');
                 const linesAfterCursor = textAfterCursor.split('\n');
 
-                // カーソルのある行を特定
                 const currentLineStart = linesBeforeCursor.slice(0, -1).join('\n').length;
                 const currentLineEnd = currentLineStart + linesBeforeCursor[linesBeforeCursor.length - 1].length + (linesAfterCursor.length > 0 ? linesAfterCursor[0].length + 1 : 0);
 
-                // 現在行を削除
                 const newText = textarea.value.substring(0, currentLineStart) + textarea.value.substring(currentLineEnd);
-
                 textarea.value = newText;
                 textarea.selectionStart = textarea.selectionEnd = currentLineStart;
                 textarea.style.height = 'auto';
@@ -197,7 +195,6 @@
                 event.preventDefault();
             }
 
-            // Shiftキーが押された場合
             if (event.key === 'Shift') {
                 shiftPressCount++;
                 clearTimeout(shiftPressTimer);
@@ -211,7 +208,6 @@
                 }
             }
 
-            // Commandキーが押された場合
             if (event.metaKey) {
                 commandPressCount++;
                 clearTimeout(commandPressTimer);
@@ -226,35 +222,29 @@
             }
         });
 
-        // Googleカレンダーに追加
         function addToGoogleCalendar() {
             const cursorPosition = textarea.selectionStart;
             const textBeforeCursor = textarea.value.substring(0, cursorPosition);
             const currentLine = textBeforeCursor.split('\n').pop() || '';
-
             if (!currentLine.trim()) return;
 
             const now = new Date();
             const startTime = formatDateForGoogleCalendar(now);
             const endTime = formatDateForGoogleCalendar(new Date(now.getTime() + 60000));
-
             const calendarUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(currentLine)}&dates=${startTime}/${endTime}`;
             window.open(calendarUrl, '_blank');
         }
 
-        // Le Chatに送信
         function sendToLeChat() {
             const cursorPosition = textarea.selectionStart;
             const textBeforeCursor = textarea.value.substring(0, cursorPosition);
             const currentLine = textBeforeCursor.split('\n').pop() || '';
-
             if (!currentLine.trim()) return;
 
             const leChatUrl = `https://chat.mistral.ai/chat?q=${encodeURIComponent(currentLine)}`;
             window.open(leChatUrl, '_blank');
         }
 
-        // Google Calendar 用の日時フォーマットに変換
         function formatDateForGoogleCalendar(date) {
             const pad = (num) => num.toString().padStart(2, '0');
             const year = date.getFullYear();
@@ -266,7 +256,6 @@
             return `${year}${month}${day}T${hours}${minutes}${seconds}`;
         }
 
-        // aタグにホバーで location.href による遷移を追加
         document.querySelectorAll('.link-menu a').forEach(link => {
             link.addEventListener('mouseenter', function(e) {
                 e.preventDefault();
