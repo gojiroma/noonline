@@ -37,16 +37,96 @@
     <script>
         const textarea = document.getElementById('textContent');
 
+        // ローカルストレージから読み込み
         textarea.value = localStorage.getItem('textContent') || '';
 
+        // テキストエリアの高さを自動調整
         textarea.addEventListener('input', function() {
             this.style.height = 'auto';
             this.style.height = (this.scrollHeight) + 'px';
             localStorage.setItem('textContent', this.value);
         });
-
         textarea.style.height = 'auto';
         textarea.style.height = (textarea.scrollHeight) + 'px';
+
+        // Shiftキーを2回押したかを追跡
+        let shiftPressCount = 0;
+        let shiftPressTimer = null;
+
+        // Commandキーを2回押したかを追跡
+        let commandPressCount = 0;
+        let commandPressTimer = null;
+
+        // キーイベントを監視
+        document.addEventListener('keydown', function(event) {
+            // Shiftキーが押された場合
+            if (event.key === 'Shift') {
+                shiftPressCount++;
+                clearTimeout(shiftPressTimer);
+                shiftPressTimer = setTimeout(() => {
+                    shiftPressCount = 0;
+                }, 500); // 500ms以内に2回押されたか判定
+
+                if (shiftPressCount === 2) {
+                    addToGoogleCalendar();
+                    shiftPressCount = 0;
+                }
+            }
+
+            // Commandキーが押された場合
+            if (event.metaKey) {
+                commandPressCount++;
+                clearTimeout(commandPressTimer);
+                commandPressTimer = setTimeout(() => {
+                    commandPressCount = 0;
+                }, 500); // 500ms以内に2回押されたか判定
+
+                if (commandPressCount === 2) {
+                    sendToLeChat();
+                    commandPressCount = 0;
+                }
+            }
+        });
+
+        // Googleカレンダーに追加
+        function addToGoogleCalendar() {
+            const cursorPosition = textarea.selectionStart;
+            const textBeforeCursor = textarea.value.substring(0, cursorPosition);
+            const currentLine = textBeforeCursor.split('\n').pop() || '';
+
+            if (!currentLine.trim()) return;
+
+            const now = new Date();
+            const startTime = formatDateForGoogleCalendar(now);
+            const endTime = formatDateForGoogleCalendar(new Date(now.getTime() + 60000)); // 1分後
+
+            const calendarUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(currentLine)}&dates=${startTime}/${endTime}`;
+            window.open(calendarUrl, '_blank');
+        }
+
+        // Le Chatに送信
+        function sendToLeChat() {
+            const cursorPosition = textarea.selectionStart;
+            const textBeforeCursor = textarea.value.substring(0, cursorPosition);
+            const currentLine = textBeforeCursor.split('\n').pop() || '';
+
+            if (!currentLine.trim()) return;
+
+            const leChatUrl = `https://chat.mistral.ai/chat?q=${encodeURIComponent(currentLine)}`;
+            window.open(leChatUrl, '_blank');
+        }
+
+        // Google Calendar 用の日時フォーマットに変換
+        function formatDateForGoogleCalendar(date) {
+            const pad = (num) => num.toString().padStart(2, '0');
+            const year = date.getFullYear();
+            const month = pad(date.getMonth() + 1);
+            const day = pad(date.getDate());
+            const hours = pad(date.getHours());
+            const minutes = pad(date.getMinutes());
+            const seconds = pad(date.getSeconds());
+            return `${year}${month}${day}T${hours}${minutes}${seconds}`;
+        }
     </script>
 </body>
 </html>
