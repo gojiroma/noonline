@@ -67,6 +67,43 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
 
+        .barcode-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            opacity: 0.3;
+            transition: opacity 0.2s;
+        }
+
+        .barcode-panel:hover {
+            opacity: 1;
+        }
+
+        .barcode-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .barcode-image {
+            height: 50px;
+            width: auto;
+            border: 1px solid var(--text-color);
+            padding: 4px;
+            background-color: var(--bg-color);
+        }
+
+        .barcode-label {
+            font-size: 11px;
+            color: var(--text-color);
+            white-space: nowrap;
+            min-width: 80px;
+        }
+
         .link-menu {
             position: absolute;
             top: 20px;
@@ -114,6 +151,9 @@
             .link-menu {
                 display: none;
             }
+            .barcode-panel {
+                display: none;
+            }
         }
     </style>
 </head>
@@ -121,6 +161,21 @@
 <body>
     <textarea id="textContent" autofocus></textarea>
     <div id="datetime"></div>
+
+    <div class="barcode-panel" id="barcodePanel">
+        <div class="barcode-item" id="barcode1Item">
+            <svg id="barcode1" width="100" height="50"></svg>
+            <div class="barcode-label" id="barcode1Label">棚卸し</div>
+        </div>
+        <div class="barcode-item" id="barcode2Item">
+            <svg id="barcode2" width="100" height="50"></svg>
+            <div class="barcode-label" id="barcode2Label">通常モード</div>
+        </div>
+        <div class="barcode-item" id="barcode3Item">
+            <svg id="barcode3" width="100" height="50"></svg>
+            <div class="barcode-label" id="barcode3Label">ペアリング</div>
+        </div>
+    </div>
 
     <div class="link-menu">
         <a href="https://www.amazon.co.jp/" class="link-amazon" target="_blank">Amazon</a>
@@ -136,13 +191,79 @@
         <a href="https://github.com/gojiroma/noonline/edit/main/index.html" class="link-github" target="_blank">Edit</a>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <script>
         const textarea = document.getElementById('textContent');
         const datetimeElement = document.getElementById('datetime');
         const faviconLink = document.getElementById('favicon');
 
+        // バーコード定義
+        const barcodes = [
+            {
+                id: 'barcode1',
+                item: 'barcode1Item',
+                label: 'barcode1Label',
+                modes: [
+                    { code: '%%SpecCode16', text: '棚卸し' },
+                    { code: '%%SpecCode18', text: 'すべて削除！' }
+                ],
+                currentMode: 0
+            },
+            {
+                id: 'barcode2',
+                item: 'barcode2Item',
+                label: 'barcode2Label',
+                modes: [
+                    { code: '%%SpecCode10', text: '通常モード' },
+                    { code: '%%SpecCode11', text: '連続保存モード' }
+                ],
+                currentMode: 0
+            },
+            {
+                id: 'barcode3',
+                item: 'barcode3Item',
+                label: 'barcode3Label',
+                modes: [
+                    { code: '%%SpecCodeEA', text: 'ペアリング' }
+                ],
+                currentMode: 0
+            }
+        ];
+
         // ローカルストレージから読み込み
         textarea.value = localStorage.getItem('textContent') || '';
+
+        // バーコードの初期化
+        function initBarcodes() {
+            barcodes.forEach(barcode => {
+                updateBarcode(barcode);
+                const itemElement = document.getElementById(barcode.item);
+                itemElement.addEventListener('click', function () {
+                    cycleBarcodeMode(barcode);
+                });
+            });
+        }
+
+        // バーコード表示を更新
+        function updateBarcode(barcode) {
+            const mode = barcode.modes[barcode.currentMode];
+            const svgElement = document.getElementById(barcode.id);
+            const labelElement = document.getElementById(barcode.label);
+
+            JsBarcode(svgElement, mode.code, {
+                format: "CODE128",
+                width: 2,
+                height: 40,
+                displayValue: false
+            });
+            labelElement.textContent = mode.text;
+        }
+
+        // バーコードモードを切り替え
+        function cycleBarcodeMode(barcode) {
+            barcode.currentMode = (barcode.currentMode + 1) % barcode.modes.length;
+            updateBarcode(barcode);
+        }
 
         // テキストエリアの高さを自動調整
         textarea.addEventListener('input', function () {
@@ -192,6 +313,9 @@
         // 初回表示
         updateDatetime();
         setInterval(updateDatetime, 1000);
+
+        // バーコード初期化
+        initBarcodes();
 
         // リダイレクトチェックを実行
         checkAndRedirect();
