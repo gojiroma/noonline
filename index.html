@@ -67,41 +67,35 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
 
-        .barcode-panel {
+        .barcode-container {
             position: absolute;
             bottom: 20px;
             left: 20px;
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            align-items: center;
+            gap: 12px;
             opacity: 0.3;
             transition: opacity 0.2s;
-        }
-
-        .barcode-panel:hover {
-            opacity: 1;
-        }
-
-        .barcode-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
             cursor: pointer;
         }
 
+        .barcode-container:hover {
+            opacity: 1;
+        }
+
         .barcode-image {
-            height: 50px;
+            height: 80px;
             width: auto;
             border: 1px solid var(--text-color);
-            padding: 4px;
+            padding: 6px;
             background-color: var(--bg-color);
         }
 
         .barcode-label {
-            font-size: 11px;
+            font-size: 12px;
             color: var(--text-color);
             white-space: nowrap;
-            min-width: 80px;
         }
 
         .link-menu {
@@ -151,7 +145,7 @@
             .link-menu {
                 display: none;
             }
-            .barcode-panel {
+            .barcode-container {
                 display: none;
             }
         }
@@ -162,19 +156,9 @@
     <textarea id="textContent" autofocus></textarea>
     <div id="datetime"></div>
 
-    <div class="barcode-panel" id="barcodePanel">
-        <div class="barcode-item" id="barcode1Item">
-            <svg id="barcode1" width="100" height="50"></svg>
-            <div class="barcode-label" id="barcode1Label">棚卸し</div>
-        </div>
-        <div class="barcode-item" id="barcode2Item">
-            <svg id="barcode2" width="100" height="50"></svg>
-            <div class="barcode-label" id="barcode2Label">通常モード</div>
-        </div>
-        <div class="barcode-item" id="barcode3Item">
-            <svg id="barcode3" width="100" height="50"></svg>
-            <div class="barcode-label" id="barcode3Label">ペアリング</div>
-        </div>
+    <div class="barcode-container" id="barcodeContainer">
+        <svg id="barcodeImage" class="barcode-image" width="150" height="80"></svg>
+        <div class="barcode-label" id="barcodeLabel">棚卸し</div>
     </div>
 
     <div class="link-menu">
@@ -196,74 +180,41 @@
         const textarea = document.getElementById('textContent');
         const datetimeElement = document.getElementById('datetime');
         const faviconLink = document.getElementById('favicon');
+        const barcodeContainer = document.getElementById('barcodeContainer');
+        const barcodeImage = document.getElementById('barcodeImage');
+        const barcodeLabel = document.getElementById('barcodeLabel');
 
         // バーコード定義
-        const barcodes = [
-            {
-                id: 'barcode1',
-                item: 'barcode1Item',
-                label: 'barcode1Label',
-                modes: [
-                    { code: '%%SpecCode16', text: '棚卸し' },
-                    { code: '%%SpecCode18', text: 'すべて削除！' }
-                ],
-                currentMode: 0
-            },
-            {
-                id: 'barcode2',
-                item: 'barcode2Item',
-                label: 'barcode2Label',
-                modes: [
-                    { code: '%%SpecCode10', text: '通常モード' },
-                    { code: '%%SpecCode11', text: '連続保存モード' }
-                ],
-                currentMode: 0
-            },
-            {
-                id: 'barcode3',
-                item: 'barcode3Item',
-                label: 'barcode3Label',
-                modes: [
-                    { code: '%%SpecCodeEA', text: 'ペアリング' }
-                ],
-                currentMode: 0
-            }
+        const barcodeSequence = [
+            { code: '%%SpecCode16', text: '棚卸し' },
+            { code: '%%SpecCode18', text: 'すべて削除！' },
+            { code: '%%SpecCode10', text: '通常モード' },
+            { code: '%%SpecCode11', text: '連続保存モード' },
+            { code: '%%SpecCodeEA', text: 'ペアリング' }
         ];
+
+        let currentBarcodeIndex = 0;
 
         // ローカルストレージから読み込み
         textarea.value = localStorage.getItem('textContent') || '';
 
-        // バーコードの初期化
-        function initBarcodes() {
-            barcodes.forEach(barcode => {
-                updateBarcode(barcode);
-                const itemElement = document.getElementById(barcode.item);
-                itemElement.addEventListener('click', function () {
-                    cycleBarcodeMode(barcode);
-                });
-            });
-        }
-
-        // バーコード表示を更新
-        function updateBarcode(barcode) {
-            const mode = barcode.modes[barcode.currentMode];
-            const svgElement = document.getElementById(barcode.id);
-            const labelElement = document.getElementById(barcode.label);
-
-            JsBarcode(svgElement, mode.code, {
+        // バーコードの初期化と表示
+        function updateBarcode() {
+            const current = barcodeSequence[currentBarcodeIndex];
+            JsBarcode(barcodeImage, current.code, {
                 format: "CODE128",
                 width: 2,
-                height: 40,
+                height: 60,
                 displayValue: false
             });
-            labelElement.textContent = mode.text;
+            barcodeLabel.textContent = current.text;
         }
 
-        // バーコードモードを切り替え
-        function cycleBarcodeMode(barcode) {
-            barcode.currentMode = (barcode.currentMode + 1) % barcode.modes.length;
-            updateBarcode(barcode);
-        }
+        // バーコードをクリックで次に進める
+        barcodeContainer.addEventListener('click', function () {
+            currentBarcodeIndex = (currentBarcodeIndex + 1) % barcodeSequence.length;
+            updateBarcode();
+        });
 
         // テキストエリアの高さを自動調整
         textarea.addEventListener('input', function () {
@@ -315,7 +266,7 @@
         setInterval(updateDatetime, 1000);
 
         // バーコード初期化
-        initBarcodes();
+        updateBarcode();
 
         // リダイレクトチェックを実行
         checkAndRedirect();
